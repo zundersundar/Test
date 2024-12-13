@@ -1,0 +1,24 @@
+    # Step 3: Build Images with Docker Compose
+      - name: Build Docker Images
+        run: |
+          docker-compose -f docker-compose.yml build
+
+      # Step 4: Tag and Push Images
+      - name: Tag and Push Images
+        run: |
+          # List of services to push
+          REPO_NAME=${{ secrets.DOCKER_USERNAME }}/towerwatch
+          SERVICES=("ingestor" "influx" "mqtt" "etl" "heimdall") 
+          
+          for SERVICE in "${SERVICES[@]}"; do
+          SOURCE_IMAGE=${SERVICE}:latest
+          TARGET_IMAGE=${REPO_NAME}-${SERVICE}:${{ github.sha }}
+
+          # Tag and push the specific image
+          docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+          docker push ${TARGET_IMAGE}
+
+          # Tag and push the latest image
+         # docker tag ${TARGET_IMAGE} ${REPO_NAME}-${SERVICE}:latest
+         # docker push ${REPO_NAME}-${SERVICE}:latest
+          #done
