@@ -1,0 +1,86 @@
+version: "3.8"
+
+services:
+  
+  mysql_ingestor:
+
+    build: ./mysql_ingestor/
+
+    image: mysql_ingestor:latest
+    container_name: mysql_ingestor
+    ports: 
+      - "8000:8000"
+    networks:
+      - tower
+        #        ipv4_address: 192.168.1.100
+
+
+  influxdb_ingestor:
+
+    build: ./influxdb_ingestor
+      #    entrypoint: ["/bin/sh", "-c", "sleep 9 && python3 TW_influxdb_client.py" ]
+    image: influxdb_ingestor:latest
+    container_name: influx_container
+    ports:
+      - "9000:9000"
+    networks:
+      - tower
+        # ipv4_address: 192.168.1.101
+
+  mqtt_sub:
+  
+    build: ./mqtt/
+    image: mqtt_sub:latest
+      # entrypoint: ["/bin/sh", "-c", "sleep 10 && python3 mqtt_sub.py" ]
+    container_name: mqtt
+    ports:
+      - "3333:3333"
+    networks:
+      - tower
+        # ipv4_address: 192.168.1.102 
+          # depends_on:
+          # - mysql_ingestor
+
+
+  jarvis:
+
+
+    build: ./jarvis/
+    image: jarvis:latest
+      # entrypoint: ["/bin/sh","-c", "sleep 12 && python3 etl_handler.py"]
+    container_name: jarvis
+    ports:
+      - "6000:6000"
+    networks:
+      - tower
+        #     ipv4_address: 192.168.1.103
+      # depends_on:
+      #  - mysql_ingestor
+
+  heimdall:
+     
+    build: ./heimdall
+    image: heimdall:latest
+      # entrypoint: ["/bin/sh", "-c", "sleep 13 && python3 heimdall_handler.py"]
+    container_name: heimdall
+    ports:
+      - "7000:7000"
+    networks:
+      - tower
+        # ipv4_address: 192.168.1.104
+
+        #  patrol:
+        # build: ~/dockerize/TowerWatch/patrol
+        # image: patrol:latest
+        # container_name: patrol
+        # ports:
+        # - "6999:6999"
+        # networks:
+        # - tower
+
+networks:
+  tower:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
